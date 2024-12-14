@@ -5,6 +5,8 @@ import random as rnd
 
 class TuringMachine:
     def __init__(self, tape, transition_fun, start, end, blank, alphabet=None, state_list=None):
+        # Initialize the tape and state, save the transition
+        # Maintain dedicated start, end, and blank states, as well as a full alphabet and statelist
         self.tape = tape
         self.head_pos = 0
         self.transition = transition_fun
@@ -15,15 +17,19 @@ class TuringMachine:
         self.alphabet = alphabet
         self.state_list = state_list
         self.step_count = 0
+        # For if the tape has to be expanded
         self.zero_pos = 0
 
+    # Causes the Machine to advance one step
     def step(self):
+        # Next state or write can return None == 'No Change'. Move must return 0.
         next_state, write, move = self.transition(self.state, self.tape[self.head_pos])
         if next_state is not None:
             self.state = next_state
         if write is not None:
             self.tape[self.head_pos] = write
         self.head_pos += move
+        # This extends the tape if we run off it, moving the head position and the zero position as needed
         if self.head_pos >= len(self.tape):
             self.tape = self.tape + [self.blank] * len(self.tape)
         if self.head_pos < 0:
@@ -31,6 +37,7 @@ class TuringMachine:
             self.zero_pos += len(self.tape)
             self.tape = [self.blank] * len(self.tape) + self.tape
 
+    # Causes the machine to run until it hits 'end'. Option to print at each step
     def run(self, verbose=False):
         while(self.state != self.end):
             if self.step_count % 1e6 == 0 and self.step_count > 0:
@@ -38,10 +45,12 @@ class TuringMachine:
             self.step_count += 1
             self.step()
             if verbose:
-                print(''.join(self.tape))
+                print(''.join(str(c) for c in self.tape))
                 print(self.state, ' -- ', self.head_pos)
         return self.tape
 
+
+# Version of the Turing machine which occasionally has a faulty transition
 class NoisyTuringMachine(TuringMachine):
     def __init__(self, *args, noise=0, state_list=None, alphabet=None):
         super().__init__(*args)
@@ -72,6 +81,8 @@ class NoisyTuringMachine(TuringMachine):
         return self.tape
 
 
+# TEST CASES
+# Busy beaver 5 test case, well known TM with complicated behavior
 BB5_dict = {
     'A': [('R', 1, 'B'), ('L', 1, 'C')],
     'B': [('R', 1, 'C'), ('R', 1, 'B')],
@@ -92,6 +103,7 @@ def test_TM_BB5():
     test_machine = TuringMachine(test_tape, BB5_transition, 'A', 'end', 0)
     print('PASSED:', sum(test_machine.run()) == 4098)
 
+# Copy TM. Copies the string from between A and B to beyond X
 copy_alphabet = ['A', 'B', 'X', '0', '1', '_', 'P']
 copy_states = ['start', 'mv_x_r', 'x_p_write', 'mv_a_l', 'read', 'copy1r', 'copy0r',
         'shift_x_p_1', 'shift_x_p_0', 'copy1l', 'copy0l', 'erase_p', 'end']
