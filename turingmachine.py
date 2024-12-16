@@ -184,3 +184,14 @@ def test_string_copy(test_str = None):
     print(''.join(res))
     print('PASSED: ', res[res.index('A')+1:res.index('B')] == res[res.index('X')+1:res.index('X')+res.index('B')-res.index('A')])
 
+def main():
+    print('RANDOM STR COPY TEST')
+    s = ''
+    for i in range(rnd.randint(1, 50)):
+        s += str(rnd.randint(0, 1))
+    test_string_copy(s)
+    print('BB5 TEST')
+    test_TM_BB5()
+
+if __name__ == '__main__':
+    main()
